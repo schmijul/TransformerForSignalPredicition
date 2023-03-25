@@ -77,18 +77,18 @@ def main():
                 val_loss += criterion(pred, batch_y).item()
             print(f"Epoch {epoch+1} - Validation Loss: {val_loss/len(val_loader):.4f}")
 
-        # Evaluate the model on the test set
-        test_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(test_x, test_y), batch_size=batch_size)
-        test_loss = 0
-        predictions = []
-        for batch_x, batch_y in test_loader:
-            pred = model(batch_x)
-            test_loss += criterion(pred, batch_y).item()
-            predictions.extend(pred.cpu().numpy())
+    # Evaluate the model on the test set
+    test_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(test_x, test_y), batch_size=batch_size)
+    test_loss = 0
+    predictions = []
+    for batch_x, batch_y in test_loader:
+        pred = model(batch_x)
+        test_loss += criterion(pred, batch_y).item()
+        predictions.extend(pred.cpu().detach().numpy())
 
-        predictions = np.array(predictions)
-        np.save("predictions.npy", predictions)
-        print(f"Test Loss: {test_loss/len(test_loader):.4f}")
+    predictions = np.array(predictions)
+    np.save("predictions.npy", predictions)
+    print(f"Test Loss: {test_loss/len(test_loader):.4f}")
 
 
 
