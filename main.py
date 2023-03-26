@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
-
+from models.transformermodel import TransformerModel
 def load_dataset(path="data/", noise="snr10", horizon=10):
     train_data = {
         "x": np.load(path + f"train_data/x_train_{noise}.npy"),
