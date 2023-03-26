@@ -46,3 +46,18 @@ class AutoregressiveTransformer(LightningModule):
         y_hat = self(x)
         loss = nn.MSELoss()(y_hat, y)
         self.log("test_loss", loss)
+        
+        
+    def predict_test_set(self, test_dataloader):
+        self.eval()  # Set the model to evaluation mode
+        predictions = []
+
+        with torch.no_grad():
+            for batch in test_dataloader:
+                x, y = batch
+                y_hat = self(x)
+                predictions.append(y_hat.cpu().numpy())
+
+        predictions = np.concatenate(predictions, axis=0)
+        horizon = predictions.shape[1] - 1
+        np.save(f"prediction_ART_SNR10_{horizon+1}ms.npy", predictions)

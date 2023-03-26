@@ -27,7 +27,6 @@ def load_dataset(path="data/", noise="snr10", horizon=10):
 
     return train_data, val_data, test_data
 
-
 if __name__ == "__main__":
     train_data, val_data, test_data = load_dataset()
 
@@ -43,3 +42,4 @@ if __name__ == "__main__":
     trainer = Trainer(max_epochs=10)  # Use 'gpus=1' to run on a GPU, if available
     trainer.fit(model, train_dataloader, val_dataloader)
     trainer.test(test_dataloaders=test_dataloader)
+    model.predict_test_set(test_dataloader)
