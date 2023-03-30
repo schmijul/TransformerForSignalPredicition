@@ -31,12 +31,10 @@ The model is based on the Transformer architecture, with some modifications to f
 
 ### Model Parameters
 
-- `num_layers`: Number of layers in the Transformer Encoder
-- `d_model`: Dimension of the model
-- `num_heads`: Number of attention heads
-- `dff`: Dimension of the feedforward network inside the Transformer layers
-- `dropout_rate`: Dropout rate for regularization
-
+- `d_model`: The dimension of the input and output vectors  
+- `nhead`: The number of heads in the multi-head attention layer
+- 'num_layers': The number of self-attention layers
+- 'input_size': The dimension of the input vector
 ## Requirements
 
 - Python 3.7 or higher
@@ -49,4 +47,11 @@ To train and test the model, simply run:
 
 ```bash
 python main.py
+```
+
+### Pipeline
+
+The pipeline consists of the following steps:
+
+- pylint (code style check) : accept only if pylint score is atleast 9/10
 
