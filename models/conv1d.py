@@ -1,47 +1,37 @@
-import numpy as np
-import pytorch_lightning as pl
-import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchviz import make_dot
+import numpy as np
+import pytorch_lightning as pl
 
+class CONV1D(nn.Module):
+    def __init__(self, num_filter, kernel_size, num_neurons):
+        super(CONV1D, self).__init__()
+        self.num_filter = num_filter
+        self.kernel_size = kernel_size
+        self.num_neurons = num_neurons
+        
+        self.conv_1 = nn.Conv1d(1, self.num_filter, kernel_size=self.kernel_size)
+        self.flat_1 = nn.Flatten()
+        self.dense_1 = nn.Linear(self.num_filter * (100 - self.kernel_size + 1), self.num_neurons)
+        self.dense_2 = nn.Linear(self.num_neurons, self.num_neurons)
+        self.dense_3 = nn.Linear(self.num_neurons, 200)
+        self.pred_layer = nn.Linear(200, 1)
 
-class AutoregressiveTransformer(pl.LightningModule):
-    """
-    This class implements an autoregressive transformer model. 
-    The model is based on the transformer architecture 
-    from the paper "Attention is all you need" (https://arxiv.org/abs/1706.03762).
-    The model is trained to predict the next value in a 
-    time series given the previous values in the time series.
-
-    """
-    def __init__(self, d_model: int, nhead: int, num_layers: int, input_size: int):
-        """
-        :param d_model: Size of the input to the transformer
-        :param nhead: Number of heads in the multi-head attention layer
-        :param num_layers: Number of transformer layers
-        :param input_size: Size of the input to the model        
-        """
-        super().__init__()
-        self.transformer = nn.Transformer(d_model, nhead, num_layers)
-        self.linear = nn.Linear(input_size, d_model)
-
-    def forward(self, x: torch.Tensor):
-        """
-        This function implements the forward pass of the model.
-        :param x: Input tensor of shape (batch_size, seq_len, input_size)
-        """
-        x = self.linear(x)
-        x = x.unsqueeze(1)
-
-        # Create the target tensor by shifting the input tensor by one position
-        tgt = x.roll(shifts=-1, dims=1)
-        tgt[:, -1, :] = 0  # Zero out the last position of the target tensor
-
-        # Pass both source and target tensors to the transformer
-        output = self.transformer(x, tgt)
-        return output[:, 0, :]
+    def forward(self, inputs):
+        x = self.conv_1(inputs)
+        x = F.relu(x)
+        x = self.flat_1(x)
+        x = self.dense_1(x)
+        x = F.relu(x)
+        x = self.dense_2(x)
+        x = F.relu(x)
+        x = self.dense_3(x)
+        x = F.relu(x)
+        x = self.pred_layer(x)
+        return x
 
     def configure_optimizers(self):
         """

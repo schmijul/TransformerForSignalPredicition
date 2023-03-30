@@ -1,47 +1,40 @@
-import numpy as np
-import pytorch_lightning as pl
-import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchviz import make_dot
+import numpy as np
+import pytorch_lightning as pl
 
+class LSTMnet(nn.Module):
+    def __init__(self, num_units):
+        super(LSTMnet, self).__init__()
+        self.num_units = num_units
 
-class AutoregressiveTransformer(pl.LightningModule):
-    """
-    This class implements an autoregressive transformer model. 
-    The model is based on the transformer architecture 
-    from the paper "Attention is all you need" (https://arxiv.org/abs/1706.03762).
-    The model is trained to predict the next value in a 
-    time series given the previous values in the time series.
+        self.lstm_1 = nn.LSTM(1, self.num_units, batch_first=True)
+        self.drop_1 = nn.Dropout(0.5)
+        self.lstm_2 = nn.LSTM(self.num_units, self.num_units, batch_first=True)
+        self.dense_1 = nn.Linear(self.num_units, 400)
+        self.drop_2 = nn.Dropout(0.5)
+        self.dense_2 = nn.Linear(400, 1300)
+        self.flat = nn.Flatten()
+        self.dense_3 = nn.Linear(1300, 200)
+        self.pred_layer = nn.Linear(200, 1)
 
-    """
-    def __init__(self, d_model: int, nhead: int, num_layers: int, input_size: int):
-        """
-        :param d_model: Size of the input to the transformer
-        :param nhead: Number of heads in the multi-head attention layer
-        :param num_layers: Number of transformer layers
-        :param input_size: Size of the input to the model        
-        """
-        super().__init__()
-        self.transformer = nn.Transformer(d_model, nhead, num_layers)
-        self.linear = nn.Linear(input_size, d_model)
-
-    def forward(self, x: torch.Tensor):
-        """
-        This function implements the forward pass of the model.
-        :param x: Input tensor of shape (batch_size, seq_len, input_size)
-        """
-        x = self.linear(x)
-        x = x.unsqueeze(1)
-
-        # Create the target tensor by shifting the input tensor by one position
-        tgt = x.roll(shifts=-1, dims=1)
-        tgt[:, -1, :] = 0  # Zero out the last position of the target tensor
-
-        # Pass both source and target tensors to the transformer
-        output = self.transformer(x, tgt)
-        return output[:, 0, :]
+    def forward(self, inputs):
+        x, _ = self.lstm_1(inputs)
+        x = self.drop_1(x)
+        x, _ = self.lstm_2(x)
+        x = self.dense_1(x[:, -1, :])
+        x = self.drop_2(x)
+        x = F.relu(x)
+        x = self.dense_2(x)
+        x = F.relu(x)
+        x = self.flat(x)
+        x = self.dense_3(x)
+        x = F.relu(x)
+        x = self.pred_layer(x)
+        return x
 
     def configure_optimizers(self):
         """
@@ -52,7 +45,7 @@ class AutoregressiveTransformer(pl.LightningModule):
 
     def training_step(self, batch: tuple):
         """
-        this function implements the training step.
+        This function implements the training step.
         :param batch: Batch of data
         :return: Dictionary with "loss" key (torch.Tensor)
         """
@@ -100,7 +93,7 @@ class AutoregressiveTransformer(pl.LightningModule):
 
         predictions = np.concatenate(predictions, axis=0)
         horizon = predictions.shape[1] - 1
-        np.save(f"prediction_ART_SNR10_{horizon+1}ms.npy", predictions)
+        np.save(f"prediction_LSTM_SNR10_{horizon+1}ms.npy", predictions)
         return predictions
 
     def plot(self, x):

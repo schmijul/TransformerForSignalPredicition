@@ -65,8 +65,11 @@ if __name__ == "__main__":
     model = AutoregressiveTransformer(d_model=BATCH_SIZE, nhead=N_HEAD, num_layers=NUM_LAYERS,
                                       input_size=train_data["x"].shape[1])
 
+
+    
     # Initialize the trainer
     logger = TensorBoardLogger(save_dir=os.getcwd(), version=1, name="lightning_logs")
+    
 
     # Early stopping
     early_stop_callback = EarlyStopping(monitor='val_loss', patience=PATIENCE)
