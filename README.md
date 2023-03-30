@@ -50,9 +50,19 @@ To train and test the model, simply run:
 python main.py
 ```
 
-### Pipeline
+## Problems 
 
-The pipeline consists of the following steps:
+If your System has a GPU but doesn't support distributed Training try:
 
-- pylint (code style check) : accept only if pylint score is atleast 9/10
+```python
+trainer = pl.Trainer(max_epochs=MAX_EPOCHS,
+                         callbacks=[early_stop_callback],
+                         logger=logger,
+                         accelerator="gpu",
+                         devices=1)
+```
+instead of 
 
+```python
+trainer = pl.Trainer(max_epochs=MAX_EPOCHS, callbacks=[early_stop_callback], logger=logger)                     
+```

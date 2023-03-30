@@ -133,3 +133,5 @@ dmypy.json
 event*
 *yaml
 epoch*
+
+*.npy
