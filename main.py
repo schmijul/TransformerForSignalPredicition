@@ -74,7 +74,10 @@ if __name__ == "__main__":
     # Early stopping
     early_stop_callback = EarlyStopping(monitor='val_loss', patience=PATIENCE)
 
+    
     # Initialize the trainer
+    
+
     trainer = pl.Trainer(max_epochs=MAX_EPOCHS, callbacks=[early_stop_callback], logger=logger)
 
     # Training

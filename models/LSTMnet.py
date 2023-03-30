@@ -43,9 +43,9 @@ class LSTMnet(nn.Module):
         optimizer = optim.Adam(self.parameters(), lr=1e-4)
         return optimizer
 
-    def training_step(self, batch: tuple):
+    def training_step(self, batch: tuple, batch_idx: int):
         """
-        This function implements the training step.
+        this function implements the training step.
         :param batch: Batch of data
         :return: Dictionary with "loss" key (torch.Tensor)
         """
@@ -55,7 +55,7 @@ class LSTMnet(nn.Module):
         self.log("train_loss", loss)
         return {"loss": loss}
 
-    def validation_step(self, batch: tuple):
+    def validation_step(self, batch: tuple, batch_idx: int):
         """
         This function implements the validation step.
         :param batch: Batch of data
@@ -66,7 +66,7 @@ class LSTMnet(nn.Module):
         loss = nn.MSELoss()(y_hat, y)
         self.log("val_loss", loss)
 
-    def test_step(self, batch: tuple):
+    def test_step(self, batch: tuple, batch_idx: int):
         """
         This function implements the test step.
         :param batch: Batch of data

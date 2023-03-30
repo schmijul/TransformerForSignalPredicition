@@ -1,6 +1,10 @@
 import torch.nn as nn
 import torch.nn.functional as F
-
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from torchviz import make_dot
+import numpy as np
+import pytorch_lightning as pl
 class MLP(nn.Module):
 
   def __init__(self, num_entryneurons=100, num_midneurons=100):
@@ -39,19 +43,19 @@ def configure_optimizers(self):
     optimizer = optim.Adam(self.parameters(), lr=1e-4)
     return optimizer
 
-def training_step(self, batch: tuple):
-    """
-    This function implements the training step.
-    :param batch: Batch of data
-    :return: Dictionary with "loss" key (torch.Tensor)
-    """
-    x, y = batch
-    y_hat = self(x)
-    loss = nn.MSELoss()(y_hat, y)
-    self.log("train_loss", loss)
-    return {"loss": loss}
+def training_step(self, batch: tuple, batch_idx: int):
+        """
+        this function implements the training step.
+        :param batch: Batch of data
+        :return: Dictionary with "loss" key (torch.Tensor)
+        """
+        x, y = batch
+        y_hat = self(x)
+        loss = nn.MSELoss()(y_hat, y)
+        self.log("train_loss", loss)
+        return {"loss": loss}
 
-def validation_step(self, batch: tuple):
+def validation_step(self, batch: tuple, batch_idx: int):
     """
     This function implements the validation step.
     :param batch: Batch of data
@@ -62,7 +66,7 @@ def validation_step(self, batch: tuple):
     loss = nn.MSELoss()(y_hat, y)
     self.log("val_loss", loss)
 
-def test_step(self, batch: tuple):
+def test_step(self, batch: tuple, batch_idx: int):
     """
     This function implements the test step.
     :param batch: Batch of data

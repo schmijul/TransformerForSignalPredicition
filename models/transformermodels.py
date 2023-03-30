@@ -50,7 +50,7 @@ class AutoregressiveTransformer(pl.LightningModule):
         optimizer = optim.Adam(self.parameters(), lr=1e-4)
         return optimizer
 
-    def training_step(self, batch: tuple):
+    def training_step(self, batch: tuple, batch_idx: int):
         """
         this function implements the training step.
         :param batch: Batch of data
@@ -62,7 +62,7 @@ class AutoregressiveTransformer(pl.LightningModule):
         self.log("train_loss", loss)
         return {"loss": loss}
 
-    def validation_step(self, batch: tuple):
+    def validation_step(self, batch: tuple, batch_idx: int):
         """
         This function implements the validation step.
         :param batch: Batch of data
@@ -73,7 +73,7 @@ class AutoregressiveTransformer(pl.LightningModule):
         loss = nn.MSELoss()(y_hat, y)
         self.log("val_loss", loss)
 
-    def test_step(self, batch: tuple):
+    def test_step(self, batch: tuple, batch_idx: int):
         """
         This function implements the test step.
         :param batch: Batch of data
