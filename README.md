@@ -14,11 +14,17 @@ The dataset consists of signal power values collected from different carriers. I
 - `y_test_snrXX.npy`: Test output/target data with XX dB SNR
 
 The x-Data Dimensions are : XX,25,1
+
 The y-Data Dimensions are : XX,31,1
 
 
 How Ever the main.py script is adjusted so it can use seqential data of different dimensions, since the Neural net input Layer uses x_train.shape[1] as input dimension.
+
 The output dimesnion is set to 1, so that one point in the future is predicted instead of a sequence.
+
+
+
+
 ## Model
 
 The model is based on the Transformer architecture, with some modifications to fit the problem. The architecture consists of an encoder with multiple self-attention layers, a positional encoding layer, and additional linear layers with ReLU activation.
