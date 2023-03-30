@@ -1,19 +1,32 @@
-import os
 import numpy as np
+import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
-import pytorch_lightning as pl
-from pytorch_lightning import LightningModule, Trainer
+from torch.utils.data import DataLoader
 
-class AutoregressiveTransformer(LightningModule):
-    def __init__(self, d_model, nhead, num_layers, input_size):
+
+class AutoregressiveTransformer(pl.LightningModule):
+    """
+    This class implements an autoregressive transformer model. 
+    The model is based on the transformer architecture 
+    from the paper "Attention is all you need" (https://arxiv.org/abs/1706.03762).
+    The model is trained to predict the next value in a 
+    time series given the previous values in the time series.
+
+    """
+    def __init__(self, d_model: int, nhead: int, num_layers: int, input_size: int):
+        """
+        :param d_model: Size of the input to the transformer
+        :param nhead: Number of heads in the multi-head attention layer
+        :param num_layers: Number of transformer layers
+        :param input_size: Size of the input to the model        
+        """
         super().__init__()
         self.transformer = nn.Transformer(d_model, nhead, num_layers)
         self.linear = nn.Linear(input_size, d_model)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor):
         """
         This function implements the forward pass of the model.
         :param x: Input tensor of shape (batch_size, seq_len, input_size)
@@ -29,7 +42,6 @@ class AutoregressiveTransformer(LightningModule):
         output = self.transformer(x, tgt)
         return output[:, 0, :]
 
-
     def configure_optimizers(self):
         """
         This function configures the optimizer.
@@ -37,58 +49,55 @@ class AutoregressiveTransformer(LightningModule):
         optimizer = optim.Adam(self.parameters(), lr=1e-4)
         return optimizer
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch: tuple):
         """
         this function implements the training step.
         :param batch: Batch of data
-        :param batch_idx: Batch index 
-
-        :return: Loss (torch.Tensor)
+        :return: Dictionary with "loss" key (torch.Tensor)
         """
         x, y = batch
         y_hat = self(x)
         loss = nn.MSELoss()(y_hat, y)
         self.log("train_loss", loss)
-        return loss
+        return {"loss": loss}
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch: tuple):
         """
         This function implements the validation step.
         :param batch: Batch of data
-        :param batch_idx: Batch index
+
         """
         x, y = batch
         y_hat = self(x)
         loss = nn.MSELoss()(y_hat, y)
         self.log("val_loss", loss)
 
-    def test_step(self, batch, batch_idx):
+    def test_step(self, batch: tuple):
         """
         This function implements the test step.
         :param batch: Batch of data
-        :param batch_idx: Batch index  
         """
         x, y = batch
         y_hat = self(x)
         loss = nn.MSELoss()(y_hat, y)
         self.log("test_loss", loss)
-        
-        
-    def predict_test_set(self, test_dataloader):
+
+    def predict_test_set(self, test_dataloader: DataLoader):
         """
         This function predicts the test set.
         :param test_dataloader: Dataloader for the test set (torch.utils.data.DataLoader)
-        : return: Predictions   (numpy.ndarray)
+        :return: Predictions (numpy.ndarray)
         """
         self.eval()  # Set the model to evaluation mode
         predictions = []
 
         with torch.no_grad():
             for batch in test_dataloader:
-                x, y = batch
+                x = batch[0]
                 y_hat = self(x)
                 predictions.append(y_hat.cpu().numpy())
 
         predictions = np.concatenate(predictions, axis=0)
         horizon = predictions.shape[1] - 1
         np.save(f"prediction_ART_SNR10_{horizon+1}ms.npy", predictions)
+        return predictions
