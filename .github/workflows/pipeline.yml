@@ -23,11 +23,11 @@ jobs:
           pip install pylint
       - name: Run PyLint
         run: |
-          pylint *  --disable=C0103,C0303,W0621,W0221,R0402,C0114 --ignore=timeseries_dataset.py,README.md --exit-zero > pylint.txt
+          pylint *  --disable=C0103,C0303,W0621,W0221,R0402,C0114 --ignore=timeseries_dataset.py,README.md -exit-zero > pylint.txt
       - name: Check PyLint score
         run: |
           SCORE=$(cat pylint.txt | grep "Your code has been rated at" | awk '{print $7}' | cut -f1 -d/)
-          if [ "$SCORE" -ge 9 ]; then
+          if (( $(echo "$SCORE >= 9" | bc -l) )); then
             echo "PyLint check passed"
           else
             echo "PyLint check failed with score $SCORE"
