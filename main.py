@@ -10,7 +10,7 @@ from models.transformermodels import AutoregressiveTransformer
 from timeseries_dataset import TimeSeriesDataset
 
 
-def load_dataset(path="data/", noise="snr10", horizon=10):
+def load_dataset(path="data/", noise="snr10", horizon=3):
     train_data = {
         "x": np.load(path + f"train_data/x_train_{noise}.npy"),
         "y": np.load(path + f"train_data/y_train_{noise}.npy")[:, horizon]
@@ -45,8 +45,8 @@ if __name__ == "__main__":
     test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE, drop_last=True)
 
 
-    model = AutoregressiveTransformer(d_model=BATCH_SIZE, nhead=N_HEAD, num_layers=NUM_LAYERS, input_size=train_dataset[0].shape[1])
-    trainer = Trainer(max_epochs=10)  # Use 'gpus=1' to run on a GPU, if available
+    model = AutoregressiveTransformer(d_model=BATCH_SIZE, nhead=N_HEAD, num_layers=NUM_LAYERS, input_size=train_data["x"].shape[1])
+    trainer = Trainer(max_epochs=50)  # Use 'gpus=1' to run on a GPU, if available
     trainer.fit(model, train_dataloader, val_dataloader)
     trainer.test(test_dataloaders=test_dataloader)
     model.predict_test_set(test_dataloader)
