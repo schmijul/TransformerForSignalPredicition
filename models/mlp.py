@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from torchviz import make_dot
 import numpy as np
 import pytorch_lightning as pl
-class MLP(nn.Module):
+class Mlp(nn.Module):
 
   def __init__(self, num_entryneurons=100, num_midneurons=100):
         super(MLP, self).__init__()

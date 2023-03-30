@@ -6,8 +6,8 @@ from torchviz import make_dot
 import numpy as np
 import pytorch_lightning as pl
 
-class CONV1D(nn.Module):
-    def __init__(self, num_filter, kernel_size, num_neurons):
+class Conv1D(nn.Module):
+    def __init__(self, num_filter=40, kernel_size=23, num_neurons=1500):
         super(CONV1D, self).__init__()
         self.num_filter = num_filter
         self.kernel_size = kernel_size

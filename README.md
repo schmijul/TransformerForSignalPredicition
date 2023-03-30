@@ -33,13 +33,14 @@ The model is based on the Transformer architecture, with some modifications to f
 
 - `d_model`: The dimension of the input and output vectors  
 - `nhead`: The number of heads in the multi-head attention layer
-- 'num_layers': The number of self-attention layers
-- 'input_size': The dimension of the input vector
+- `num_layers`: The number of self-attention layers
+- `input_size`: The dimension of the input vector
 ## Requirements
 
-- Python 3.7 or higher
+- Python 3.10 or higher
 - NumPy
 - PyTorch
+- PyTorch Lightning
 
 ## Usage
 

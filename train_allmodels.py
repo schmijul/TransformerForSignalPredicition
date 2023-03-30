@@ -1,11 +1,16 @@
 import os
 import numpy as np
+import torch
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
-# Own Files
+# Models
 from models.transformermodels import AutoregressiveTransformer
+from models.mlp import Mlp
+from models.lstm_net import Lstm
+from models.conv1d import Conv1D
+
 from timeseries_dataset import TimeSeriesDataset
 
 
@@ -41,6 +46,8 @@ if __name__ == "__main__":
     MAX_EPOCHS = 100  # Maximum number of epochs
     PATIENCE = 10  # if val loss does not improve after PATIENCE epochs stop Training
 
+
+    
     # Load the dataset
     train_data, val_data, test_data = load_dataset()
 
@@ -60,31 +67,25 @@ if __name__ == "__main__":
     test_dataloader = DataLoader(test_dataset,
                                  batch_size=BATCH_SIZE,
                                  drop_last=True)
-
-    # Initialize the model
-    model = AutoregressiveTransformer(d_model=BATCH_SIZE, nhead=N_HEAD, num_layers=NUM_LAYERS,
-                                      input_size=train_data["x"].shape[1])
-
-
     
-    # Initialize the trainer
-    logger = TensorBoardLogger(save_dir=os.getcwd(), version=1, name="lightning_logs")
+    models = {
+        "transformer": AutoregressiveTransformer(d_model=BATCH_SIZE, nhead=N_HEAD, num_layers=NUM_LAYERS,
+                                      input_size=train_data["x"].shape[1]),
+        "mlp": Mlp(),
+        "lstm": Lstm(),
+        "conv1d": Conv1D()
+    }
     
-
-    # Early stopping
-    early_stop_callback = EarlyStopping(monitor='val_loss', patience=PATIENCE)
-
-    
-    # Initialize the trainer
-    
-
-    trainer = pl.Trainer(max_epochs=MAX_EPOCHS, callbacks=[early_stop_callback], logger=logger)
-
-    # Training
-    trainer.fit(model, train_dataloader, val_dataloader)
-
-    # Testing
-    trainer.test(dataloaders=test_dataloader)
-
-    # Predicting
-    model.predict_test_set(test_dataloader)
+    for model_name, model in models.items():
+        # Create a logger
+        logger = TensorBoardLogger("lightning_logs", name=model_name)
+        # Create an early stopping callback
+        early_stopping = EarlyStopping(monitor="val_loss", patience=PATIENCE)
+        # Create a trainer
+        trainer = pl.Trainer(max_epochs=MAX_EPOCHS, logger=logger, callbacks=[early_stopping])
+        # Train the model
+        trainer.fit(model, train_dataloader, val_dataloader)
+        # Test the model
+        trainer.test(model, test_dataloaders=test_dataloader)
+        # Save the model
+        torch.save(model.state_dict(), f"models/{model_name}.pt")

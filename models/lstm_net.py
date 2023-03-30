@@ -6,8 +6,8 @@ from torchviz import make_dot
 import numpy as np
 import pytorch_lightning as pl
 
-class LSTMnet(nn.Module):
-    def __init__(self, num_units):
+class Lstm(nn.Module):
+    def __init__(self, num_units=25):
         super(LSTMnet, self).__init__()
         self.num_units = num_units
 
