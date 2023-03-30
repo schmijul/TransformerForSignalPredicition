@@ -10,6 +10,7 @@ from models.transformermodels import AutoregressiveTransformer
 from models.mlp import Mlp
 from models.lstm_net import Lstm
 from models.conv1d import Conv1D
+from models.wiener_filter import WienerFilter
 
 from timeseries_dataset import TimeSeriesDataset
 
@@ -89,3 +90,10 @@ if __name__ == "__main__":
         trainer.test(model, test_dataloaders=test_dataloader)
         # Save the model
         torch.save(model.state_dict(), f"models/{model_name}.pt")
+        
+        
+    # Wiener Filter predictions
+    wf = WienerFilter()
+    wf.fit(train_data["x"])
+    wf_preds = wf.predict(test_data["x"])
+    np.save("wf_preds.npy", wf_preds)
