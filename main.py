@@ -28,17 +28,24 @@ def load_dataset(path="data/", noise="snr10", horizon=10):
     return train_data, val_data, test_data
 
 if __name__ == "__main__":
+    
+    BATCH_SIZE = 4*64
+    NUM_LAYERS = 2
+    N_HEAD = 4
+    
+    
     train_data, val_data, test_data = load_dataset()
 
     train_dataset = TimeSeriesDataset(train_data["x"], train_data["y"])
     val_dataset = TimeSeriesDataset(val_data["x"], val_data["y"])
     test_dataset = TimeSeriesDataset(test_data["x"], test_data["y"])
 
-    train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-    val_dataloader = DataLoader(val_dataset, batch_size=64)
-    test_dataloader = DataLoader(test_dataset, batch_size=64)
+    train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
+    val_dataloader = DataLoader(val_dataset, batch_size=BATCH_SIZE, drop_last=True)
+    test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE, drop_last=True)
 
-    model = AutoregressiveTransformer(d_model=64, nhead=4, num_layers=3, input_size=25)
+
+    model = AutoregressiveTransformer(d_model=BATCH_SIZE, nhead=N_HEAD, num_layers=NUM_LAYERS, input_size=train_dataset[0].shape[1])
     trainer = Trainer(max_epochs=10)  # Use 'gpus=1' to run on a GPU, if available
     trainer.fit(model, train_dataloader, val_dataloader)
     trainer.test(test_dataloaders=test_dataloader)
