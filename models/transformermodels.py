@@ -1,3 +1,5 @@
+import os
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -12,6 +14,10 @@ class AutoregressiveTransformer(LightningModule):
         self.linear = nn.Linear(input_size, d_model)
 
     def forward(self, x):
+        """
+        This function implements the forward pass of the model.
+        :param x: Input tensor of shape (batch_size, seq_len, input_size)
+        """
         x = self.linear(x)
         x = x.unsqueeze(1)
 
@@ -25,10 +31,20 @@ class AutoregressiveTransformer(LightningModule):
 
 
     def configure_optimizers(self):
+        """
+        This function configures the optimizer.
+        """
         optimizer = optim.Adam(self.parameters(), lr=1e-4)
         return optimizer
 
     def training_step(self, batch, batch_idx):
+        """
+        this function implements the training step.
+        :param batch: Batch of data
+        :param batch_idx: Batch index 
+
+        :return: Loss (torch.Tensor)
+        """
         x, y = batch
         y_hat = self(x)
         loss = nn.MSELoss()(y_hat, y)
@@ -36,12 +52,22 @@ class AutoregressiveTransformer(LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
+        """
+        This function implements the validation step.
+        :param batch: Batch of data
+        :param batch_idx: Batch index
+        """
         x, y = batch
         y_hat = self(x)
         loss = nn.MSELoss()(y_hat, y)
         self.log("val_loss", loss)
 
     def test_step(self, batch, batch_idx):
+        """
+        This function implements the test step.
+        :param batch: Batch of data
+        :param batch_idx: Batch index  
+        """
         x, y = batch
         y_hat = self(x)
         loss = nn.MSELoss()(y_hat, y)
@@ -49,6 +75,11 @@ class AutoregressiveTransformer(LightningModule):
         
         
     def predict_test_set(self, test_dataloader):
+        """
+        This function predicts the test set.
+        :param test_dataloader: Dataloader for the test set (torch.utils.data.DataLoader)
+        : return: Predictions   (numpy.ndarray)
+        """
         self.eval()  # Set the model to evaluation mode
         predictions = []
 
