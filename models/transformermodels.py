@@ -6,7 +6,30 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchviz import make_dot
 
-
+class TimeSeriesTransformer(nn.Module):
+    def __init__(self, d_model, nhead, num_layers, seq_len=25):
+        super(TimeSeriesTransformer, self).__init__()
+        
+        self.d_model = d_model
+        self.seq_len = seq_len
+        
+        self.positional_encoding = self.create_positional_encoding()
+        self.transformer_layer = nn.Transformer(d_model, nhead, num_layers)
+        self.linear = nn.Linear(d_model, 1)
+        
+    def create_positional_encoding(self):
+        position = torch.arange(0, self.seq_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, self.d_model, 2).float() * (-torch.log(torch.tensor(10000.0)) / self.d_model))
+        positional_encoding = torch.zeros(self.seq_len, self.d_model)
+        positional_encoding[:, 0::2] = torch.sin(position * div_term)
+        positional_encoding[:, 1::2] = torch.cos(position * div_term)
+        return positional_encoding.unsqueeze(0)
+        
+    def forward(self, x):
+        x = x + self.positional_encoding
+        x = self.transformer_layer(x, x)
+        x = self.linear(x[-1])
+        return x.squeeze()
 class AutoregressiveTransformer(pl.LightningModule):
     """
     This class implements an autoregressive transformer model. 
