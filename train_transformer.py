@@ -64,10 +64,10 @@ def main():
     )
    
     # Initialize PyTorch Lightning's Trainer
-    early_stopping = EarlyStopping(monitor='val_loss', patience=PATIENCE, mode='min')
+    early_stop_callback = EarlyStopping(monitor='val_loss', patience=PATIENCE, mode='min')
     logger = TensorBoardLogger("tb_logs", name="TimeSeriesTransformer")
     trainer = pl.Trainer(max_epochs=MAX_EPOCHS,
-                         callbacks=[early_stopping], 
+                         callbacks=[early_stop_callback], 
                          logger=logger)
 
     # Train the model
@@ -78,7 +78,7 @@ def main():
     
 
     # Evaluate the model on the test set
-    trainer.test(test_dataloaders=test_dataloader)
+    trainer.test(dataloaders=test_dataloader)
     
     predictions = trainer.predict(model, test_dataloader)
     np.save(PREDICTION_FILE_NAME, predictions)
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     BATCH_SIZE = 4 * 64  # Batch size
     NUM_LAYERS = 2  # Number of transformer layers
     N_HEAD = 1  # Number of heads in the multi-head attention layer
-    MAX_EPOCHS = 100  # Maximum number of epochs
+    MAX_EPOCHS = 1  # Maximum number of epochs
     PATIENCE = 10  # if val loss does not improve after PATIENCE epochs stop Training
     
     PREDICTION_FILE_NAME = "predictionsTST.npy"
