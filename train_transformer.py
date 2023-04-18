@@ -38,22 +38,25 @@ def main():
      # Load the dataset
     train_data, val_data, test_data = load_dataset()
 
-    train_dataset = TimeSeriesDataset(train_data["x"], train_data["y"])
-    val_dataset = TimeSeriesDataset(val_data["x"], val_data["y"])
-    test_dataset = TimeSeriesDataset(test_data["x"], test_data["y"])
+    train_dataset = TimeSeriesDataset(train_data["x"][:DEBUGGING_DATA_SIZE,:], train_data["y"][:DEBUGGING_DATA_SIZE])
+    val_dataset = TimeSeriesDataset(val_data["x"][:DEBUGGING_DATA_SIZE], val_data["y"][:DEBUGGING_DATA_SIZE])
+    test_dataset = TimeSeriesDataset(test_data["x"][:DEBUGGING_DATA_SIZE,:], test_data["y"][:DEBUGGING_DATA_SIZE])
 
     train_dataloader = DataLoader(train_dataset,
                                 batch_size=BATCH_SIZE,
                                 shuffle=True, 
-                                drop_last=True)
+                                drop_last=True,
+                                num_workers=4)
     
     val_dataloader = DataLoader(val_dataset,
                                 batch_size=BATCH_SIZE,
-                                drop_last=True)
+                                drop_last=True,
+                                num_workers=4)
     
     test_dataloader = DataLoader(test_dataset,
                                  batch_size=BATCH_SIZE,
-                                 drop_last=True)
+                                 drop_last=True,
+                                 num_workers=4)
     
     # Initialize the model
     model = TimeSeriesTransformer(
@@ -71,25 +74,28 @@ def main():
                          logger=logger)
 
     # Train the model
-    trainer.fit(model, train_dataloader, val_dataloader)
-    
+    trainer.fit(model, train_dataloader, 
+                val_dataloader)
+    print("finished Training")
     # save the model
-    torch.save(model.state_dict(), MODEL_SAVE_NAME)
+    torch.save(model, MODEL_SAVE_NAME)
     
 
     # Evaluate the model on the test set
-    trainer.test(dataloaders=test_dataloader)
+    #trainer.test(dataloaders=test_dataloader)
     
     predictions = trainer.predict(model, test_dataloader)
-    np.save(PREDICTION_FILE_NAME, predictions)
+    print("finished Predicting")
+    for batch in range(len(predictions)):
+        np.save(PREDICTION_FILE_NAME+f"_batch_{batch+1}.npy", predictions[batch])
 if __name__ == "__main__":
-    BATCH_SIZE = 4 * 64  # Batch size
+    BATCH_SIZE = 2*64  # Batch size
     NUM_LAYERS = 2  # Number of transformer layers
-    N_HEAD = 1  # Number of heads in the multi-head attention layer
-    MAX_EPOCHS = 1  # Maximum number of epochs
+    N_HEAD = 2  # Number of heads in the multi-head attention layer
+    MAX_EPOCHS = 30  # Maximum number of epochs
     PATIENCE = 10  # if val loss does not improve after PATIENCE epochs stop Training
-    
-    PREDICTION_FILE_NAME = "predictionsTST.npy"
+    DEBUGGING_DATA_SIZE = 15000
+    PREDICTION_FILE_NAME = "predictionsTST"
     MODEL_SAVE_NAME = "TimeSeriesTransformer.pt"
 
     main()
